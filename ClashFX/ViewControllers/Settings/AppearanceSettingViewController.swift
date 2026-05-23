@@ -13,7 +13,7 @@ class AppearanceSettingViewController: NSViewController {
 
     override func loadView() {
         let width: CGFloat = 400
-        let contentView = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 240))
+        let contentView = NSView(frame: NSRect(x: 0, y: 0, width: width, height: 420))
         contentView.translatesAutoresizingMaskIntoConstraints = false
 
         let trayBox = NSBox()
@@ -61,7 +61,7 @@ class AppearanceSettingViewController: NSViewController {
                 menuSettingView.leadingAnchor.constraint(equalTo: cv.leadingAnchor, constant: 8),
                 menuSettingView.trailingAnchor.constraint(equalTo: cv.trailingAnchor, constant: -8),
                 menuSettingView.heightAnchor.constraint(equalToConstant: trayMenuSettingViewHeight),
-                cv.bottomAnchor.constraint(equalTo: menuSettingView.bottomAnchor, constant: 8),
+                cv.bottomAnchor.constraint(equalTo: menuSettingView.bottomAnchor, constant: 8)
             ])
         }
 
@@ -87,7 +87,7 @@ class AppearanceSettingViewController: NSViewController {
 
         view = contentView
         title = NSLocalizedString("Appearance", comment: "")
-        preferredContentSize = NSSize(width: 420, height: 280)
+        preferredContentSize = NSSize(width: 420, height: 460)
     }
 
     override func viewDidLayout() {
