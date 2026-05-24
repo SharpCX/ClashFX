@@ -545,11 +545,12 @@
 
 /* Menu bar icon picker */
 "Built-in menu bar icons" = "内置菜单栏图标";
-"Lightning Cat" = "方案 1：闪电猫";
-"Network Nodes" = "方案 2：节点网络";
-"Linked Nodes" = "方案 2：节点连线";
-"Shield Cat" = "方案 3：盾牌猫";
-"Bolt Outline" = "方案 4：闪电线框";
+"Lightning Cat" = "闪电猫";
+"Network Nodes" = "节点网络";
+"Shield Cat" = "盾牌猫";
+"Bolt Outline" = "闪电线框";
+"Outline Face Cat" = "线框猫脸";
+"Filled Face Cat" = "实心猫脸";
 
 /* Advanced TUN Settings */
 "Advanced TUN Settings…" = "高级 TUN 设置…";

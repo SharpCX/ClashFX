@@ -508,11 +508,12 @@
 
 /* Menu bar icon picker */
 "Built-in menu bar icons" = "內置選單列圖示";
-"Lightning Cat" = "方案 1：閃電貓";
-"Network Nodes" = "方案 2：節點網路";
-"Linked Nodes" = "方案 2：節點連線";
-"Shield Cat" = "方案 3：盾牌貓";
-"Bolt Outline" = "方案 4：閃電線框";
+"Lightning Cat" = "閃電貓";
+"Network Nodes" = "節點網路";
+"Shield Cat" = "盾牌貓";
+"Bolt Outline" = "閃電線框";
+"Outline Face Cat" = "線框貓臉";
+"Filled Face Cat" = "實心貓臉";
 
 /* Advanced TUN Settings */
 "Advanced TUN Settings…" = "進階 TUN 設定…";
