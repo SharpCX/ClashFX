@@ -506,6 +506,14 @@
 "Dock changed for this session, but this app bundle cannot persist Finder icon changes." = "現在の Dock アイコンは更新されましたが、この app bundle では Finder のアイコン変更を保存できません。";
 "Default" = "デフォルト";
 
+/* Menu bar icon picker */
+"Built-in menu bar icons" = "内蔵メニューバーアイコン";
+"Lightning Cat" = "案 1: 稲妻猫";
+"Network Nodes" = "案 2: ノードネットワーク";
+"Linked Nodes" = "案 2: リンクノード";
+"Shield Cat" = "案 3: シールド猫";
+"Bolt Outline" = "案 4: 稲妻アウトライン";
+
 /* Advanced TUN Settings */
 "Advanced TUN Settings…" = "TUN 詳細設定…";
 "Advanced TUN Settings" = "TUN 詳細設定";

@@ -506,6 +506,14 @@
 "Dock changed for this session, but this app bundle cannot persist Finder icon changes." = "Значок Dock обновлен для текущего сеанса, но этот app bundle не может сохранить изменения значка Finder.";
 "Default" = "По умолчанию";
 
+/* Menu bar icon picker */
+"Built-in menu bar icons" = "Встроенные значки меню";
+"Lightning Cat" = "Вариант 1: кот-молния";
+"Network Nodes" = "Вариант 2: сетевые узлы";
+"Linked Nodes" = "Вариант 2: связанные узлы";
+"Shield Cat" = "Вариант 3: кот-щит";
+"Bolt Outline" = "Вариант 4: контур молнии";
+
 /* Advanced TUN Settings */
 "Advanced TUN Settings…" = "Расширенные настройки TUN…";
 "Advanced TUN Settings" = "Расширенные настройки TUN";
