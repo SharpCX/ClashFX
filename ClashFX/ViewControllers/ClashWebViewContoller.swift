@@ -16,9 +16,12 @@ enum WebCacheCleaner {
         DispatchQueue.global(qos: .utility).async {
             HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
             Logger.log("[WebCacheCleaner] All cookies deleted")
-            WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+        }
+        DispatchQueue.main.async {
+            let store = WKWebsiteDataStore.default()
+            store.fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
                 for record in records {
-                    WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+                    store.removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
                     Logger.log("[WebCacheCleaner] Record \(record) deleted")
                 }
             }
