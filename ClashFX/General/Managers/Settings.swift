@@ -107,6 +107,9 @@ enum Settings {
     @UserDefault("enhancedMode", defaultValue: false)
     static var enhancedMode: Bool
 
+    @UserDefault("bypassChineseApps", defaultValue: false)
+    static var bypassChineseApps: Bool
+
     @UserDefault("appLanguage", defaultValue: "")
     static var appLanguage: String
 

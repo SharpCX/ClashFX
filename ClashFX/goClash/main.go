@@ -865,7 +865,7 @@ func clashResumeCore() *C.char {
 }
 
 //export clashWriteEnhancedConfig
-func clashWriteEnhancedConfig(configPath *C.char, outputPath *C.char, tunRouteExcludeList *C.char, tunMTUParam C.uint, tunInterfaceNameParam *C.char) *C.char {
+func clashWriteEnhancedConfig(configPath *C.char, outputPath *C.char, tunRouteExcludeList *C.char, tunMTUParam C.uint, tunInterfaceNameParam *C.char, bypassCnApps C.int) *C.char {
 	excludeRaw := C.GoString(tunRouteExcludeList)
 	ifaceName := strings.TrimSpace(C.GoString(tunInterfaceNameParam))
 	mtuParam := uint32(tunMTUParam)
@@ -967,6 +967,27 @@ func clashWriteEnhancedConfig(configPath *C.char, outputPath *C.char, tunRouteEx
 	rawMap["profile"] = profile
 
 	ensureDefaultProxyPort(rawMap)
+
+	if bypassCnApps != 0 {
+		providers, _ := rawMap["rule-providers"].(map[string]interface{})
+		if providers == nil {
+			providers = map[string]interface{}{}
+		}
+		providers["clashfx-cn-apps-direct"] = map[string]interface{}{
+			"type":     "http",
+			"behavior": "classical",
+			"url":      "https://raw.githubusercontent.com/Clash-FX/cn-apps-direct/main/apps-direct.list",
+			"path":     "./ruleset/clashfx-cn-apps-direct.list",
+			"interval": 86400,
+		}
+		rawMap["rule-providers"] = providers
+
+		existingRules, _ := rawMap["rules"].([]interface{})
+		newRules := make([]interface{}, 0, len(existingRules)+1)
+		newRules = append(newRules, "RULE-SET,clashfx-cn-apps-direct,DIRECT")
+		newRules = append(newRules, existingRules...)
+		rawMap["rules"] = newRules
+	}
 
 	data, err := yaml.Marshal(rawMap)
 	if err != nil {

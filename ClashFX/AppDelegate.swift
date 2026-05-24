@@ -74,6 +74,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var subscriptionStatusMenuItem: NSMenuItem?
     private var subscriptionStatusSeparator: NSMenuItem?
     private weak var advancedTunMenuItem: NSMenuItem?
+    private weak var bypassChineseAppsMenuItem: NSMenuItem?
 
     var disposeBag = DisposeBag()
     var statusItemView: StatusItemViewProtocol!
@@ -122,6 +123,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppLogoTool.applyLogo()
         setupStatusMenuItemData()
         installAdvancedTunMenuItem()
+        installBypassChineseAppsMenuItem()
         DispatchQueue.main.async {
             self.postFinishLaunching()
         }
@@ -295,6 +297,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         refreshStatusItemViewStatus()
         enhancedModeMenuItem.state = Settings.enhancedMode ? .on : .off
+        bypassChineseAppsMenuItem?.state = Settings.bypassChineseApps ? .on : .off
         installSubscriptionStatusMenuItemIfNeeded()
         refreshSubscriptionStatusMenuItem()
     }
@@ -831,6 +834,38 @@ extension AppDelegate {
         advancedTunMenuItem = item
     }
 
+    private func installBypassChineseAppsMenuItem() {
+        let item = NSMenuItem(
+            title: NSLocalizedString("Bypass Common Chinese Apps", comment: ""),
+            action: #selector(actionToggleBypassChineseApps(_:)),
+            keyEquivalent: ""
+        )
+        item.target = self
+        item.state = Settings.bypassChineseApps ? .on : .off
+        let parentMenu = enhancedModeMenuItem.menu ?? statusMenu
+        let anchor = advancedTunMenuItem ?? enhancedModeMenuItem
+        let insertIndex = (parentMenu?.index(of: anchor!) ?? -1) + 1
+        if let menu = parentMenu, insertIndex > 0 {
+            menu.insertItem(item, at: insertIndex)
+        } else {
+            statusMenu.addItem(item)
+        }
+        bypassChineseAppsMenuItem = item
+    }
+
+    @objc func actionToggleBypassChineseApps(_ sender: NSMenuItem) {
+        let newState = !Settings.bypassChineseApps
+        Settings.bypassChineseApps = newState
+        bypassChineseAppsMenuItem?.state = newState ? .on : .off
+        Logger.log("Bypass Common Chinese Apps \(newState ? "enabled" : "disabled")")
+
+        if Settings.enhancedMode {
+            disableEnhancedMode { [weak self] _ in
+                self?.enableEnhancedMode { _ in }
+            }
+        }
+    }
+
     @objc func showAdvancedTunSettings(_ sender: Any?) {
         let alert = NSAlert()
         alert.messageText = NSLocalizedString("Advanced TUN Settings", comment: "")
@@ -893,7 +928,8 @@ extension AppDelegate {
                     tempConfigPath.goStringBuffer(),
                     Settings.tunRouteExcludeList.joined(separator: ",").goStringBuffer(),
                     GoUint32(Settings.tunMTU),
-                    Settings.tunInterfaceName.goStringBuffer()
+                    Settings.tunInterfaceName.goStringBuffer(),
+                    Settings.bypassChineseApps ? 1 : 0
                 )?.toString() ?? ""
 
                 DispatchQueue.main.async {
@@ -1800,6 +1836,7 @@ extension AppDelegate {
         proxySettingMenuItem.isHidden = !(showProxyActions && Settings.trayMenuShowSystemProxy)
         enhancedModeMenuItem.isHidden = !(showProxyActions && Settings.trayMenuShowEnhancedMode)
         advancedTunMenuItem?.isHidden = enhancedModeMenuItem.isHidden
+        bypassChineseAppsMenuItem?.isHidden = enhancedModeMenuItem.isHidden
         let showCopy = showProxyActions && Settings.trayMenuShowCopyShellCmd
         copyExportCommandMenuItem.isHidden = !showCopy
         copyExportCommandExternalMenuItem.isHidden = !showCopy
