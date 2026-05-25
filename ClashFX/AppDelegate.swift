@@ -73,6 +73,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var configEditorMenuItem: NSMenuItem?
     private var subscriptionStatusMenuItem: NSMenuItem?
     private var subscriptionStatusSeparator: NSMenuItem?
+    private var localProxyProviderSubscriptionInfoCache: [String: SubscriptionInfo] = [:]
+    private var localProxyProviderSubscriptionInfoRequests = Set<String>()
+    private var localProxyProviderSubscriptionInfoAttemptTimes: [String: Date] = [:]
     private weak var advancedTunMenuItem: NSMenuItem?
     private weak var bypassChineseAppsMenuItem: NSMenuItem?
     var labHelpMenuItems: [NSMenuItem] = []
@@ -339,12 +342,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         let activeName = ConfigManager.selectConfigName
         let activeRemote = RemoteConfigManager.shared.configs.first { $0.name == activeName }
-        guard let info = activeRemote?.subscriptionInfo,
+        let info = activeRemote?.subscriptionInfo ?? localProxyProviderSubscriptionInfoCache[activeName]
+
+        guard let info,
               let summary = SubscriptionInfoFormatter.menuSubtitle(for: info) else {
             item.attributedTitle = NSAttributedString(string: "")
             item.title = ""
             item.isHidden = true
             separator.isHidden = true
+            refreshLocalProxyProviderSubscriptionStatus(configName: activeName)
             return
         }
 
@@ -354,6 +360,64 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         item.isHidden = false
         separator.isHidden = false
+    }
+
+    private func refreshLocalProxyProviderSubscriptionStatus(configName: String) {
+        guard !RemoteConfigManager.shared.configs.contains(where: { $0.name == configName }) else { return }
+        guard !localProxyProviderSubscriptionInfoRequests.contains(configName) else { return }
+        if let lastAttempt = localProxyProviderSubscriptionInfoAttemptTimes[configName],
+           Date().timeIntervalSince(lastAttempt) < Settings.configAutoUpdateInterval {
+            return
+        }
+
+        localProxyProviderSubscriptionInfoRequests.insert(configName)
+        localProxyProviderSubscriptionInfoAttemptTimes[configName] = Date()
+
+        ConfigManager.getConfigPath(configName: configName) { [weak self] path in
+            DispatchQueue.global(qos: .utility).async {
+                guard let yaml = try? String(contentsOfFile: path, encoding: .utf8),
+                      let providerURL = Self.firstRemoteProxyProviderURL(in: yaml) else {
+                    DispatchQueue.main.async {
+                        self?.localProxyProviderSubscriptionInfoRequests.remove(configName)
+                    }
+                    return
+                }
+
+                let providerConfig = RemoteConfigModel(url: providerURL.absoluteString, name: configName)
+                RemoteConfigManager.getRemoteConfigData(config: providerConfig) { providerBody, _, providerHeaders in
+                    let headerInfo = RemoteConfigManager.parseSubscriptionUserinfoHeader(providerHeaders)
+                    let bodyInfo = providerBody.flatMap(RemoteConfigManager.parseSubscriptionInfoFromBody)
+                    let info = SubscriptionInfo.merging(primary: headerInfo, fallback: bodyInfo)
+
+                    DispatchQueue.main.async {
+                        guard let self = self else { return }
+                        self.localProxyProviderSubscriptionInfoRequests.remove(configName)
+                        if let info {
+                            self.localProxyProviderSubscriptionInfoCache[configName] = info
+                        }
+                        if ConfigManager.selectConfigName == configName {
+                            self.refreshSubscriptionStatusMenuItem()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static func firstRemoteProxyProviderURL(in yaml: String) -> URL? {
+        guard let document = try? ConfigDocument.loadFromYAML(yaml) else { return nil }
+        for (_, provider) in document.proxyProviders {
+            guard let dict = provider as? [String: Any],
+                  let type = (dict["type"] as? String)?.lowercased(),
+                  ["http", "https"].contains(type),
+                  let rawURL = dict["url"] as? String,
+                  let url = URL(string: rawURL),
+                  ["http", "https"].contains(url.scheme?.lowercased() ?? "") else {
+                continue
+            }
+            return url
+        }
+        return nil
     }
 
     func setupData() {
