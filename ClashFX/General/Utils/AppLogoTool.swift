@@ -128,8 +128,8 @@ enum AppLogoTool {
 
         icon.draw(in: NSRect(origin: .zero, size: canvas))
 
-        let dotDiameter: CGFloat = 200
-        let inset: CGFloat = 150
+        let dotDiameter: CGFloat = 150
+        let inset: CGFloat = 70
         let dotRect = NSRect(
             x: canvas.width - inset - dotDiameter,
             y: canvas.height - inset - dotDiameter,
