@@ -139,6 +139,28 @@ func parseEntryAsPrefix(s string) (netip.Prefix, bool) {
 	return netip.Prefix{}, false
 }
 
+func isTunFakeIPFilterEntry(s string) bool {
+	if s == "" || strings.ContainsAny(s, " \t/") {
+		return false
+	}
+	name := strings.TrimPrefix(strings.TrimPrefix(s, "*."), "+.")
+	if name == "" {
+		return false
+	}
+	for _, label := range strings.Split(name, ".") {
+		if label == "" || strings.HasPrefix(label, "-") || strings.HasSuffix(label, "-") {
+			return false
+		}
+		for _, r := range label {
+			if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' {
+				continue
+			}
+			return false
+		}
+	}
+	return true
+}
+
 func splitTunRouteExcludeEntries(raw string) ([]netip.Prefix, []string, []string) {
 	var prefixes []netip.Prefix
 	var domains []string
@@ -153,7 +175,7 @@ func splitTunRouteExcludeEntries(raw string) ([]netip.Prefix, []string, []string
 			prefixes = append(prefixes, prefix)
 			continue
 		}
-		if strings.Contains(entry, ".") || strings.HasPrefix(entry, "*.") || strings.HasPrefix(entry, "+.") {
+		if isTunFakeIPFilterEntry(entry) {
 			domains = append(domains, entry)
 			continue
 		}
