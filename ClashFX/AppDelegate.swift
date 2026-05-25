@@ -119,17 +119,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: statusItemLengthWithSpeed)
         statusItemView = StatusItemView.create(statusItem: statusItem)
         statusItemView.updateSize(width: statusItemLengthWithSpeed)
-        statusItemView.updateLabBadge(isLab: AutoUpgradeManager.isLabBuild)
+        statusMenu.delegate = self
+        statusItem.menu = statusMenu
+        AppLogoTool.applyLogo()
         NotificationCenter.default.addObserver(
             forName: Settings.labChannelDidChangeNotification,
             object: nil,
             queue: .main
-        ) { [weak self] _ in
-            self?.statusItemView?.updateLabBadge(isLab: AutoUpgradeManager.isLabBuild)
+        ) { _ in
+            AppLogoTool.applyLogo()
         }
-        statusMenu.delegate = self
-        statusItem.menu = statusMenu
-        AppLogoTool.applyLogo()
         setupStatusMenuItemData()
         installAdvancedTunMenuItem()
         installBypassChineseAppsMenuItem()

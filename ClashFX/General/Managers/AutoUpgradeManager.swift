@@ -21,6 +21,10 @@ final class AutoUpgradeManager: NSObject {
         isLabBuild ? NSLocalizedString("Lab", comment: "Update channel name") : NSLocalizedString("Stable", comment: "Update channel name")
     }
 
+    static var shouldShowLabBadge: Bool {
+        isLabBuild || Settings.isLabChannel
+    }
+
     private var updaterController: SPUStandardUpdaterController!
 
     override private init() {

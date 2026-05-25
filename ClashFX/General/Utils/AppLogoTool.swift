@@ -101,12 +101,13 @@ enum AppLogoTool {
     static func applyLogo() -> Bool {
         let bundlePath = Bundle.main.bundlePath
         let didSetIcon: Bool
+        let baseIcon = loadSelectedLogo() ?? originalDefaultIcon
+        let finalIcon = AutoUpgradeManager.shouldShowLabBadge ? addLabBadge(to: baseIcon) : loadSelectedLogo()
 
-        if let selectedLogo = loadSelectedLogo() {
-            NSApp.applicationIconImage = selectedLogo
-            didSetIcon = canPersistBundleIcon ? NSWorkspace.shared.setIcon(selectedLogo, forFile: bundlePath) : true
+        if let finalIcon {
+            NSApp.applicationIconImage = finalIcon
+            didSetIcon = canPersistBundleIcon ? NSWorkspace.shared.setIcon(finalIcon, forFile: bundlePath) : true
         } else {
-            // nil restores the default icon from the asset catalog
             NSApp.applicationIconImage = nil
             didSetIcon = canPersistBundleIcon ? NSWorkspace.shared.setIcon(nil, forFile: bundlePath) : true
         }
@@ -117,6 +118,48 @@ enum AppLogoTool {
         NSWorkspace.shared.noteFileSystemChanged(bundlePath)
         refreshIconAppearanceCache()
         return didSetIcon
+    }
+
+    private static func addLabBadge(to icon: NSImage) -> NSImage {
+        let canvas = NSSize(width: 1024, height: 1024)
+        let result = NSImage(size: canvas)
+        result.lockFocus()
+        defer { result.unlockFocus() }
+
+        icon.draw(in: NSRect(origin: .zero, size: canvas))
+
+        let triSize: CGFloat = 360
+        let path = NSBezierPath()
+        path.move(to: NSPoint(x: canvas.width, y: canvas.height))
+        path.line(to: NSPoint(x: canvas.width - triSize, y: canvas.height))
+        path.line(to: NSPoint(x: canvas.width, y: canvas.height - triSize))
+        path.close()
+        NSColor.systemOrange.setFill()
+        path.fill()
+        NSColor.white.setStroke()
+        path.lineWidth = 14
+        path.stroke()
+
+        let label = "Lab"
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 120, weight: .black),
+            .foregroundColor: NSColor.white,
+            .kern: 2
+        ]
+        let textSize = (label as NSString).size(withAttributes: attrs)
+        let cx = canvas.width - triSize / 2.7
+        let cy = canvas.height - triSize / 2.7
+
+        NSGraphicsContext.current?.saveGraphicsState()
+        let transform = NSAffineTransform()
+        transform.translateX(by: cx, yBy: cy)
+        transform.rotate(byDegrees: -45)
+        transform.concat()
+        let textRect = NSRect(x: -textSize.width / 2, y: -textSize.height / 2, width: textSize.width, height: textSize.height)
+        (label as NSString).draw(in: textRect, withAttributes: attrs)
+        NSGraphicsContext.current?.restoreGraphicsState()
+
+        return result
     }
 
     private static func refreshIconAppearanceCache() {
