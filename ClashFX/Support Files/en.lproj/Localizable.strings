@@ -560,3 +560,6 @@
 "If Enhanced Mode is on, please disable it before downgrading." = "If Enhanced Mode is on, please disable it before downgrading.";
 "Open Download Page" = "Open Download Page";
 "Local development build" = "Local development build";
+
+/* Bypass Common Chinese Apps */
+"Bypass Common Chinese Apps" = "Bypass Common Chinese Apps";

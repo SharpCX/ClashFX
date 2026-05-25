@@ -556,3 +556,6 @@
 "If Enhanced Mode is on, please disable it before downgrading." = "Enhanced Mode が有効な場合は、ダウングレード前に無効化してください。";
 "Open Download Page" = "ダウンロードページを開く";
 "Local development build" = "ローカル開発ビルド";
+
+/* Bypass Common Chinese Apps */
+"Bypass Common Chinese Apps" = "中国の主要アプリをバイパス";
