@@ -179,6 +179,11 @@ jobs:
         tag, signature, length, channel = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
         pub_date = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S %z")
 
+        parts = [int(part) for part in tag.split(".")]
+        while len(parts) < 4:
+            parts.append(0)
+        appcast_version = f"{parts[0]}{parts[1]:03d}{parts[2]:03d}{parts[3]:03d}"
+
         is_lab = channel == "lab"
         title_suffix = " (Lab)" if is_lab else ""
         notes_html = f"<h2>ClashFX v{tag}{title_suffix}</h2>"
@@ -205,12 +210,12 @@ jobs:
             {notes_html}
           ]]></description>
           <pubDate>{pub_date}</pubDate>
-          <sparkle:version>{tag}</sparkle:version>
+          <sparkle:version>{appcast_version}</sparkle:version>
           <sparkle:shortVersionString>{tag}</sparkle:shortVersionString>
           {channel_tag}          <sparkle:minimumSystemVersion>10.14</sparkle:minimumSystemVersion>
           <enclosure
             url="https://github.com/Clash-FX/ClashFX/releases/download/{tag}/ClashFX.dmg"
-            sparkle:version="{tag}"
+            sparkle:version="{appcast_version}"
             sparkle:shortVersionString="{tag}"
             sparkle:edSignature="{signature}"
             length="{length}"
