@@ -30,7 +30,7 @@ Download from the [Releases](https://github.com/Clash-FX/ClashFX/releases) page.
 
 ### 🧪 Update Channels: Stable & Lab
 
-> **🚧 Coming with v1.1.0** — the Lab channel goes live alongside the next release. Until then everyone stays on Stable; the toggle below shows up once you're on v1.1.0+.
+> The Lab channel has been live since **v1.1.0**. Stable remains the default and recommended choice; opt into Lab in `Settings → Debug → Update Channel → Lab (Experimental)` if you're on v1.1.0+.
 
 ClashFX ships through two update channels. You can choose either — both are first-class.
 
