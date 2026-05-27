@@ -559,3 +559,6 @@
 
 /* Bypass Common Chinese Apps */
 "Bypass Common Chinese Apps" = "Обход популярных китайских приложений";
+
+/* Requires Enhanced Mode (uses PROCESS-NAME rules) */
+"Requires Enhanced Mode (uses PROCESS-NAME rules)" = "Требуется режим Enhanced (используются правила PROCESS-NAME)";

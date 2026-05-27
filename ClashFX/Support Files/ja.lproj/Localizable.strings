@@ -559,3 +559,6 @@
 
 /* Bypass Common Chinese Apps */
 "Bypass Common Chinese Apps" = "中国の主要アプリをバイパス";
+
+/* Requires Enhanced Mode (uses PROCESS-NAME rules) */
+"Requires Enhanced Mode (uses PROCESS-NAME rules)" = "拡張モードが必要です（PROCESS-NAME ルールを使用）";

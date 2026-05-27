@@ -975,6 +975,10 @@ extension AppDelegate {
         )
         item.target = self
         item.state = Settings.bypassChineseApps ? .on : .off
+        item.toolTip = NSLocalizedString(
+            "Requires Enhanced Mode (uses PROCESS-NAME rules)",
+            comment: ""
+        )
         let parentMenu = enhancedModeMenuItem.menu ?? statusMenu
         let anchor = advancedTunMenuItem ?? enhancedModeMenuItem
         let insertIndex = (parentMenu?.index(of: anchor!) ?? -1) + 1
@@ -1873,6 +1877,7 @@ extension AppDelegate {
 
 extension AppDelegate: NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
+        ensureMenuTargets(in: menu)
         MenuItemFactory.refreshExistingMenuItems()
         updateConfigFiles()
         refreshSubscriptionStatusMenuItem()
@@ -1880,6 +1885,17 @@ extension AppDelegate: NSMenuDelegate {
         NotificationCenter.default.post(name: .proxyMeneViewShowLeftPadding,
                                         object: nil,
                                         userInfo: ["show": hasMenuSelected()])
+    }
+
+    private func ensureMenuTargets(in menu: NSMenu) {
+        for item in menu.items {
+            if item.action != nil, item.target == nil {
+                item.target = self
+            }
+            if let submenu = item.submenu {
+                ensureMenuTargets(in: submenu)
+            }
+        }
     }
 
     func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
@@ -1892,6 +1908,36 @@ extension AppDelegate: NSMenuDelegate {
         for element in menu.items {
             (element.view as? ProxyGroupMenuHighlightDelegate)?.highlight(item: nil)
         }
+    }
+}
+
+// MARK: NSMenuItemValidation
+
+extension AppDelegate: NSMenuItemValidation {
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        guard let action = menuItem.action else { return true }
+
+        // Bypass Common Chinese Apps relies on PROCESS-NAME rules,
+        // which only resolve under Enhanced Mode (TUN). In Rule mode
+        // mihomo cannot see the originating process, so the toggle is
+        // a no-op there. Disable it and surface the reason via tooltip.
+        if action == #selector(actionToggleBypassChineseApps(_:)) {
+            return Settings.enhancedMode
+        }
+
+        // When an External Control instance is selected, local-only
+        // actions don't apply to the remote core.
+        if RemoteControlManager.selectConfig != nil {
+            let disabledInRemoteMode: Set<Selector> = [
+                #selector(actionSetSystemProxy(_:)),
+                #selector(actionCopyExportCommand(_:))
+            ]
+            if disabledInRemoteMode.contains(action) {
+                return false
+            }
+        }
+
+        return true
     }
 }
 

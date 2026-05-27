@@ -1,15 +1,13 @@
 ### Bug Fixes
 
-- **Status Bar Speed Recovery** — The menu bar upload/download speed display now recovers when the traffic or log WebSocket closes cleanly, stalls without an error, or becomes stale after macOS sleep/wake.
-- **Network Change Recovery** — ClashFX now resets the traffic stream after local IP/interface changes so the menu bar speed indicator does not stay frozen after switching Wi-Fi, VPN, or network environments.
-- **Remote Subscription Compatibility** — Remote config downloads now use a Clash Meta-compatible User-Agent, fixing providers that returned only base64/share-link node lists instead of full YAML rules and proxy groups.
-- **Legacy TUN Route Exclusions** — Enhanced Mode now automatically converts old LAN wildcard exclusions such as `10.*`, `192.168.*`, and `172.16.*`–`172.31.*` into valid CIDR ranges before generating the mihomo config. The Go config writer also accepts these legacy entries as a fallback.
+- **Status Bar Menu No Longer Greys Out Unexpectedly** — Action items in the status bar menu (Set as System Proxy, Enhanced Mode, Copy Terminal Command, Quit, etc.) could become disabled when another window briefly stole the responder chain (e.g. during Sparkle update prompts or Settings sheets). All menu items now have explicit targets and a centralized `validateMenuItem:` implementation, so the menu state remains correct regardless of focus changes.
+- **Bypass Common Chinese Apps Now Reflects Enhanced Mode** — The "Bypass Common Chinese Apps" toggle relies on `PROCESS-NAME` rules that only resolve under Enhanced Mode (TUN). Under Rule mode mihomo cannot see the originating process, so the toggle was previously a silent no-op. It is now disabled in Rule mode with a tooltip explaining the requirement; toggling Enhanced Mode on automatically re-enables it.
+- **External Control Mode No Longer Breaks Other Menu Items** — Selecting an External Control instance used to disable Sparkle's auto-validation for the entire status menu, which could leave unrelated items greyed out. Disable logic now targets only the actions that genuinely don't apply to a remote core (Set as System Proxy, Copy Terminal Command), while everything else stays usable.
 
 ---
 
 ### 修复
 
-- **状态栏网速恢复** — 菜单栏上传/下载速度在 traffic/log WebSocket 正常关闭、无错误卡住，或 macOS 睡眠/唤醒后变成旧连接时，现在会自动恢复，不再长期定格。
-- **网络变化恢复** — 本机 IP 或网络接口变化后，ClashFX 会重置流量流，避免切换 Wi-Fi、VPN 或网络环境后菜单栏网速继续冻结。
-- **远程订阅兼容性** — 远程配置下载现在使用 Clash Meta 兼容的 User-Agent，修复部分机场只返回 base64/share-link 节点列表，导致规则和代理组丢失的问题。
-- **旧版 TUN 路由排除兼容** — 增强模式会自动把 `10.*`、`192.168.*`、`172.16.*`–`172.31.*` 等旧局域网通配符转换成 mihomo 接受的 CIDR；Go 配置生成层也增加了兜底兼容。
+- **菜单栏不再无故灰掉** — 状态栏菜单的动作项（设置为系统代理、增强模式、复制终端代理命令、退出等）在其他窗口短暂抢占响应链时（如 Sparkle 弹窗、设置面板出现时）会被自动禁用。现在所有菜单项都显式绑定 target，并通过统一的 `validateMenuItem:` 校验，焦点切换不会再让菜单状态错乱。
+- **「绕过常用国内应用」按增强模式自动启停** — 这个开关依赖 `PROCESS-NAME` 规则，只有增强模式（TUN）下 mihomo 才看得到进程名。规则模式下 mihomo 只是 HTTP/SOCKS 代理，拿不到进程信息，开关此前是静默失效。现在在规则模式下会自动灰掉并显示提示，开启增强模式后自动恢复可用。
+- **外部控制模式不再误伤其他菜单项** — 之前选中外部控制实例会关闭整个状态栏菜单的自动校验，可能让无关菜单项一起变灰。现在只有真正不适用远程核心的动作（设置为系统代理、复制终端代理命令）会被禁用，其他菜单项保持可用。

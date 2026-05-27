@@ -559,3 +559,6 @@
 
 /* Bypass Common Chinese Apps */
 "Bypass Common Chinese Apps" = "繞過常用國內應用";
+
+/* Requires Enhanced Mode (uses PROCESS-NAME rules) */
+"Requires Enhanced Mode (uses PROCESS-NAME rules)" = "需要先開啟增強模式（依賴 PROCESS-NAME 規則）";
