@@ -39,3 +39,13 @@ gitupdate.bat
 # Swift Package Manager
 ClashFX.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 build_output/
+
+# OMC / Claude Code
+.omc/
+**/.omc/
+
+# Xcode workspace (auto-generated)
+*.xcworkspace/contents.xcworkspacedata
+
+# CocoaPods
+Podfile.lock

@@ -78,7 +78,7 @@ class RemoteConfigManager {
 
     static var autoUpdateEnable: Bool {
         get {
-            return UserDefaults.standard.object(forKey: "kAutoUpdateEnable") as? Bool ?? true
+            return UserDefaults.standard.object(forKey: "kAutoUpdateEnable") as? Bool ?? false
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "kAutoUpdateEnable")
