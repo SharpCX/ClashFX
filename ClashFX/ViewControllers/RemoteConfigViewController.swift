@@ -15,6 +15,8 @@ class RemoteConfigViewController: NSViewController {
     @IBOutlet var updateButton: NSButton!
 
     private var latestAddedConfig: RemoteConfigModel?
+    private var exportButton: NSButton!
+    private var importButton: NSButton!
 
     let disposeBag = DisposeBag()
 
@@ -26,6 +28,7 @@ class RemoteConfigViewController: NSViewController {
         super.viewDidLoad()
         updateButtonStatus()
         tableView.doubleAction = #selector(tableViewDidDoubleClick(tableView:))
+        setupSyncButtons()
 
         NotificationCenter.default
             .rx.notification(Notification.Name("didGetUrl")).bind {
@@ -65,6 +68,53 @@ class RemoteConfigViewController: NSViewController {
         guard let model = RemoteConfigManager.shared.configs[safe: tableView.selectedRow] else { return }
         requestUpdate(config: model)
         tableView.reloadDataKeepingSelection()
+    }
+
+    @objc func actionExportToiCloud() {
+        RemoteConfigManager.shared.exportToiCloud { error in
+            if let error = error {
+                NSAlert.alert(with: error)
+            } else {
+                NSAlert.alert(with: NSLocalizedString("Exported successfully. Open iCloud Drive to verify.", comment: ""))
+            }
+        }
+    }
+
+    @objc func actionImportFromiCloud() {
+        RemoteConfigManager.shared.importFromiCloud { addedCount, error in
+            if let error = error {
+                NSAlert.alert(with: error)
+                return
+            }
+
+            self.tableView.reloadData()
+            self.updateButtonStatus()
+
+            if addedCount == 0 {
+                NSAlert.alert(with: NSLocalizedString("No new configs to import. All configs already exist.", comment: ""))
+            } else {
+                NSAlert.alert(with: String(format: NSLocalizedString("Imported %d new config(s).", comment: ""), addedCount))
+            }
+        }
+    }
+
+    private func setupSyncButtons() {
+        exportButton = NSButton(title: NSLocalizedString("Export to iCloud", comment: ""), target: self, action: #selector(actionExportToiCloud))
+        importButton = NSButton(title: NSLocalizedString("Import from iCloud", comment: ""), target: self, action: #selector(actionImportFromiCloud))
+
+        exportButton.translatesAutoresizingMaskIntoConstraints = false
+        importButton.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(exportButton)
+        view.addSubview(importButton)
+
+        NSLayoutConstraint.activate([
+            exportButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            exportButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
+
+            importButton.leadingAnchor.constraint(equalTo: exportButton.trailingAnchor, constant: 12),
+            importButton.bottomAnchor.constraint(equalTo: exportButton.bottomAnchor)
+        ])
     }
 }
 

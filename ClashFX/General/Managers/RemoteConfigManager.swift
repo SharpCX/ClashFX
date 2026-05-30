@@ -47,6 +47,86 @@ class RemoteConfigManager {
         }
     }
 
+    // MARK: - iCloud Export / Import
+
+    private static let iCloudConfigFileName = "remote_configs.json"
+
+    func exportToiCloud(completion: @escaping ((String?) -> Void)) {
+        guard ICloudManager.shared.icloudAvailable else {
+            completion(NSLocalizedString("iCloud is not available. Please enable iCloud Drive in System Settings.", comment: ""))
+            return
+        }
+
+        ICloudManager.shared.getUrl { [weak self] url in
+            guard let url = url else {
+                completion(NSLocalizedString("Failed to access iCloud container.", comment: ""))
+                return
+            }
+
+            let fileURL = url.appendingPathComponent(iCloudConfigFileName)
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            encoder.outputFormatting = .prettyPrinted
+
+            do {
+                let data = try encoder.encode(self?.configs ?? [])
+                try data.write(to: fileURL, options: .atomic)
+                Logger.log("[iCloud Export] Exported \(self?.configs.count ?? 0) remote configs to iCloud")
+                completion(nil)
+            } catch {
+                Logger.log("[iCloud Export] Failed: \(error.localizedDescription)", level: .error)
+                completion(error.localizedDescription)
+            }
+        }
+    }
+
+    func importFromiCloud(completion: @escaping ((Int, String?) -> Void)) {
+        guard ICloudManager.shared.icloudAvailable else {
+            completion(0, NSLocalizedString("iCloud is not available. Please enable iCloud Drive in System Settings.", comment: ""))
+            return
+        }
+
+        ICloudManager.shared.getUrl { [weak self] url in
+            guard let self = self else { return }
+            guard let url = url else {
+                completion(0, NSLocalizedString("Failed to access iCloud container.", comment: ""))
+                return
+            }
+
+            let fileURL = url.appendingPathComponent(iCloudConfigFileName)
+            guard FileManager.default.fileExists(atPath: fileURL.path) else {
+                Logger.log("[iCloud Import] No remote_configs.json found in iCloud")
+                completion(0, NSLocalizedString("No exported config found in iCloud.", comment: ""))
+                return
+            }
+
+            do {
+                let data = try Data(contentsOf: fileURL)
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                let importedConfigs = try decoder.decode([RemoteConfigModel].self, from: data)
+
+                var addedCount = 0
+                for config in importedConfigs {
+                    if !self.configs.contains(where: { $0.name == config.name }) {
+                        self.configs.append(config)
+                        addedCount += 1
+                    }
+                }
+
+                if addedCount > 0 {
+                    self.saveConfigs()
+                }
+
+                Logger.log("[iCloud Import] Added \(addedCount) / \(importedConfigs.count) configs from iCloud")
+                completion(addedCount, nil)
+            } catch {
+                Logger.log("[iCloud Import] Failed: \(error.localizedDescription)", level: .error)
+                completion(0, error.localizedDescription)
+            }
+        }
+    }
+
     func migrateOldRemoteConfig() {
         if let url = UserDefaults.standard.string(forKey: "kRemoteConfigUrl"),
            let name = URL(string: url)?.host {
